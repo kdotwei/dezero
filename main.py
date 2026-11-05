@@ -4,13 +4,19 @@ class Variable:
     def __init__(self, data):
         self.data = data
         self.grad = None
+        self.creator = None
+    
+    def set_creater(self, func):
+        self.creator = func
 
 class Function:
     def __call__(self, input):
         x = input.data
         y = self.forward(x)
         output = Variable(y)
+        output.set_creater(self)
         self.input = input
+        self.output = output
         return output
     
     def forward(self, x):
@@ -48,8 +54,24 @@ a = A(x)
 b = B(a)
 y = C(b)
 
+assert y.creator == C
+assert y.creator.input == b
+assert y.creator.input.creator == B
+assert y.creator.input.creator.input == a
+assert y.creator.input.creator.input.creator == A
+assert y.creator.input.creator.input.creator.input == x
+
 y.grad = np.array(1.0)
+
+C = y.creator
+b = C.input
 b.grad = C.backward(y.grad)
+
+B = b.creator
+a = B.input
 a.grad = B.backward(b.grad)
+
+A = a.creator
+x = A.input
 x.grad = A.backward(a.grad)
 print(x.grad)
