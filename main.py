@@ -54,16 +54,15 @@ class Exp(Function):
         x = self.input.data
         gx = np.exp(x) * gy
         return gx
+    
+def square(x):
+    return Square()(x)
 
-A = Square()
-B = Exp()
-C = Square()
+def exp(x):
+    return Exp()(x)
 
 x = Variable(np.array(0.5))
-a = A(x)
-b = B(a)
-y = C(b)
-
+y = square(exp(square(x)))
 y.grad = np.array(1.0)
 y.backward()
 print(x.grad)
